@@ -18,9 +18,11 @@ PKG_HASH:=e9a61f641ff96ca95319edfb17948cd297d0cd3342736b2c49c99d4716fb993d
 PKG_MAINTAINER:=Maxim Storchak <m.storchak@gmail.com>
 PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
+PKG_CPE_ID:=cpe:/a:smartmontools:smartmontools
 
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
+PKG_BUILD_FLAGS:=lto
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -78,9 +80,7 @@ define Package/smartd-mail/description
   A script for mailing about SMART issues
 endef
 
-TARGET_LDFLAGS += -flto
-
-TARGET_CXXFLAGS +=-fno-rtti -flto
+TARGET_CXXFLAGS +=-fno-rtti
 MAKE_FLAGS +=BUILD_INFO='"(localbuild)"'
 
 CONFIGURE_ARGS += \

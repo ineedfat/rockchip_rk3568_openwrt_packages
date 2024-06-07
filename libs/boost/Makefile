@@ -11,13 +11,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=boost
-PKG_VERSION:=1.81.0
-PKG_SOURCE_VERSION:=1_81_0
+PKG_VERSION:=1.84.0
+PKG_SOURCE_VERSION:=1_84_0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)_$(PKG_SOURCE_VERSION).tar.bz2
 PKG_SOURCE_URL:=@SF/$(PKG_NAME)/$(PKG_NAME)/$(PKG_VERSION) https://boostorg.jfrog.io/artifactory/main/release/$(PKG_VERSION)/source/
-PKG_HASH:=71feeed900fbccca04a3b4f2f84a7c217186f28a940ed8b7ed4725986baf99fa
+PKG_HASH:=cc4b893acf645c9d4b698e9a0f08ca8846aa5d6c68275c14c3e7949c24109454
 
 PKG_MAINTAINER:=Carlos M. Ferreira <carlosmf.pt@gmail.com>
 PKG_LICENSE:=BSL-1.0
@@ -29,7 +29,7 @@ HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/$(PKG_NAME)_$(PKG_SOURCE_VERSION)
 
 HOST_BUILD_PARALLEL:=1
 PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16 gc-sections lto
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -42,12 +42,13 @@ define Package/boost/Default
 endef
 
 define Package/boost/description
-This package provides the Boost v1.81.0 libraries.
+This package provides the Boost v1.84.0 libraries.
 Boost is a set of free, peer-reviewed, portable C++ source libraries.
 
 This package provides the following run-time libraries:
  - atomic
  - chrono
+ - cobalt (new)
  - container
  - context
  - contract
@@ -74,11 +75,11 @@ This package provides the following run-time libraries:
  - thread
  - timer
  - type_erasure
- - url (new)
+ - url
  - wave
 
 There are many more header-only libraries supported by Boost.
-See more at http://www.boost.org/doc/libs/1_81_0/
+See more at http://www.boost.org/doc/libs/1_84_0/
 endef
 
 PKG_BUILD_DEPENDS:=boost/host
@@ -336,6 +337,7 @@ endef
 
 $(eval $(call DefineBoostLibrary,atomic,system))
 $(eval $(call DefineBoostLibrary,chrono,system))
+$(eval $(call DefineBoostLibrary,cobalt,system container))
 $(eval $(call DefineBoostLibrary,container))
 $(eval $(call DefineBoostLibrary,context,chrono system,,!boost-context-exclude))
 $(eval $(call DefineBoostLibrary,contract,system))
@@ -379,17 +381,15 @@ define Host/Compile
 endef
 
 CONFIGURE_PREFIX:=$(PKG_INSTALL_DIR)
-TARGET_LDFLAGS += -pthread -lrt -lstdc++ -Wl,--gc-sections,--as-needed,--print-gc-sections
+TARGET_LDFLAGS += -pthread -lrt -lstdc++ -Wl,--as-needed,--print-gc-sections
 
 TARGET_CFLAGS += \
-	$(if $(CONFIG_SOFT_FLOAT),-DBOOST_NO_FENV_H) -fPIC -ffunction-sections -fdata-sections -flto
+	$(if $(CONFIG_SOFT_FLOAT),-DBOOST_NO_FENV_H) -fPIC
 
-ifeq ($(word 1,$(subst ., ,$(call qstrip,$(CONFIG_GCC_VERSION)))),5)
-    EXTRA_CXXFLAGS += -std=gnu++14
-else ifneq ($(filter-out 6 7 8 9,$(word 1,$(subst ., ,$(call qstrip,$(CONFIG_GCC_VERSION))))),)
-    EXTRA_CXXFLAGS += -std=gnu++17
+ifeq ($(word 1,$(subst ., ,$(call qstrip,$(CONFIG_GCC_VERSION)))),11)
+    EXTRA_CXXFLAGS += -std=gnu++20
 else
-    EXTRA_CXXFLAGS += -std=gnu++2a
+    EXTRA_CXXFLAGS += -std=gnu++23
 endif
 
 ifneq ($(findstring mips,$(ARCH)),)

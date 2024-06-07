@@ -1,8 +1,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=dockerd
-PKG_VERSION:=25.0.3
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=26.1.0
+PKG_RELEASE:=1
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
 
@@ -10,14 +10,14 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_GIT_URL:=github.com/moby/moby
 PKG_GIT_REF:=v$(PKG_VERSION)
 PKG_SOURCE_URL:=https://codeload.$(PKG_GIT_URL)/tar.gz/$(PKG_GIT_REF)?
-PKG_HASH:=4cdb516f5d6f5caf8b3bcf93c2962277ba727cfd2d1620176a3bb0cf153b3590
-PKG_GIT_SHORT_COMMIT:=f417435 # SHA1 used within the docker executables
+PKG_HASH:=7a59781fe9e1d74d1ada53624f0bde909de503964b729dc9dfb21e56c3a9b8ae
+PKG_GIT_SHORT_COMMIT:=c8af8eb # SHA1 used within the docker executables
 
 PKG_MAINTAINER:=Gerard Ryan <G.M0N3Y.2503@gmail.com>
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
 
 GO_PKG:=github.com/docker/docker
 
@@ -46,7 +46,8 @@ define Package/dockerd
     +kmod-nf-ipvs \
     +kmod-veth \
     +tini \
-    @!(mips||mipsel)
+    +uci-firewall \
+    @!(mips||mips64||mipsel)
   USERID:=docker:docker
   MENU:=1
 endef
@@ -59,7 +60,6 @@ define Package/dockerd/description
 The Docker CE Engine.
 endef
 
-GO_PKG_BUILD_VARS += GO111MODULE=auto
 TAR_OPTIONS:=--strip-components 1 $(TAR_OPTIONS)
 TAR_CMD=$(HOST_TAR) -C $(1) $(TAR_OPTIONS)
 TARGET_LDFLAGS += $(if $(CONFIG_USE_GLIBC),-lc -lgcc_eh)

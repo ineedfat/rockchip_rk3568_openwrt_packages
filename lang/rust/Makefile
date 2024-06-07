@@ -5,12 +5,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rust
-PKG_VERSION:=1.74.1
-PKG_RELEASE:=1
+PKG_VERSION:=1.78.0
+PKG_RELEASE:=2
 
 PKG_SOURCE:=rustc-$(PKG_VERSION)-src.tar.gz
 PKG_SOURCE_URL:=https://static.rust-lang.org/dist/
-PKG_HASH:=67db3e22fc9921c885baae5953ba144fc474cde29ec69ab56d43ce764206231d
+PKG_HASH:=ff544823a5cb27f2738128577f1e7e00ee8f4c83f2a348781ae4fc355e91d5a9
 HOST_BUILD_DIR:=$(BUILD_DIR)/host/rustc-$(PKG_VERSION)-src
 
 PKG_MAINTAINER:=Luca Barbato <lu_zero@luminem.org>
@@ -18,7 +18,6 @@ PKG_LICENSE:=Apache-2.0 MIT
 PKG_LICENSE_FILES:=LICENSE-APACHE LICENSE-MIT
 
 PKG_HOST_ONLY:=1
-PKG_USE_MIPS16:=0
 PKG_BUILD_FLAGS:=no-mips16
 
 include $(INCLUDE_DIR)/host-build.mk
@@ -55,7 +54,7 @@ TARGET_CONFIGURE_ARGS = \
 	--set=target.$(RUSTC_TARGET_ARCH).linker=$(TARGET_CC_NOCACHE) \
 	--set=target.$(RUSTC_TARGET_ARCH).ranlib=$(TARGET_RANLIB) \
 	--set=target.$(RUSTC_TARGET_ARCH).crt-static=false \
-	$(if $(CONFIG_USE_MUSL),--set=target.$(RUSTC_TARGET_ARCH).musl-root=$(TOOLCHAIN_DIR))
+	$(if $(CONFIG_USE_MUSL),--set=target.$(RUSTC_TARGET_ARCH).musl-root=$(TOOLCHAIN_ROOT_DIR))
 
 # CARGO_HOME is an environmental
 HOST_CONFIGURE_VARS += CARGO_HOME="$(CARGO_HOME)"
@@ -72,11 +71,11 @@ HOST_CONFIGURE_ARGS = \
 	--datadir=$(STAGING_DIR)/host/share \
 	--mandir=$(STAGING_DIR)/host/man \
 	--dist-compression-formats=gz \
-	--enable-missing-tools \
 	--disable-sanitizers \
 	--release-channel=stable \
 	--enable-cargo-native-static \
-	--set=llvm.download-ci-llvm=false \
+	--bootstrap-cache-path=$(DL_DIR)/rustc \
+	--set=llvm.download-ci-llvm=true \
 	$(TARGET_CONFIGURE_ARGS)
 
 define Host/Uninstall
@@ -89,7 +88,6 @@ define Host/Compile
 	$(RUST_SCCACHE_VARS) \
 	CARGO_HOME=$(CARGO_HOME) \
 	TARGET_CFLAGS="$(TARGET_CFLAGS)" \
-	OPENWRT_RUSTC_BOOTSTRAP_CACHE=$(DL_DIR)/rustc \
 	$(PYTHON) $(HOST_BUILD_DIR)/x.py \
 		--build-dir $(HOST_BUILD_DIR)/build \
 		--config $(HOST_BUILD_DIR)/config.toml \

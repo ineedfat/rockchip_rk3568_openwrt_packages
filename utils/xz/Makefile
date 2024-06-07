@@ -9,12 +9,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=xz
-PKG_VERSION:=5.4.1
+PKG_VERSION:=5.4.6
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=@SF/lzmautils
-PKG_HASH:=dd172acb53867a68012f94c17389401b2f274a1aa5ae8f84cbfb8b7e383ea8d3
+PKG_HASH:=913851b274e8e1d31781ec949f1c23e8dbcf0ecf6e73a2436dc21769dd3e6f49
 
 PKG_MAINTAINER:=
 PKG_LICENSE:=Public-Domain LGPL-2.1-or-later GPL-2.0-or-later GPL-3.0-or-later
@@ -23,6 +23,7 @@ PKG_CPE_ID:=cpe:/a:tukaani:xz
 
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
+PKG_BUILD_FLAGS:=lto
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -71,7 +72,7 @@ define BuildSubPackage
   $$(eval $$(call BuildPackage,$(1)))
 endef
 
-TARGET_LDFLAGS += -Wl,--gc-sections -flto
+TARGET_LDFLAGS += -Wl,--gc-sections
 
 CONFIGURE_ARGS += \
 	--enable-small \

@@ -19,11 +19,11 @@ PKG_MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>
 
 PKG_LICENSE:=ISC
 PKG_LICENSE_FILES:=doc/LICENSE
-PKG_CPE_ID:=cpe:/a:todd_miller:sudo
+PKG_CPE_ID:=cpe:/a:sudo_project:sudo
 
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
 
 include $(INCLUDE_DIR)/package.mk
 

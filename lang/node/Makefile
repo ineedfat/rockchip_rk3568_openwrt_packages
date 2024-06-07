@@ -1,3 +1,6 @@
+#
+# Copyright (C) 2006-2017 OpenWrt.org
+#
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
 #
@@ -5,37 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=node
+PKG_VERSION:=v20.14.0
+PKG_RELEASE:=1
 
-ifeq ($(CONFIG_NODEJS_18),y)
-PKG_VERSION:=v18.15.0
-PKG_RELEASE:=1
-PKG_HASH:=8e44d65018ff973284195c23186469a0ea4082e97ec4200e5f5706d5584daa37
-PATCH_DIR:=./patches/v18.x
-else
-ifeq ($(CONFIG_NODEJS_16),y)
-PKG_VERSION:=v16.19.1
-PKG_RELEASE:=1
-PKG_HASH:=17fb716406198125b30c94dd3d1756207b297705626afe16d8dc479a65a1d8b5
-PATCH_DIR:=./patches/v16.x
-else
-ifeq ($(CONFIG_NODEJS_14),y)
-PKG_VERSION:=v14.21.3
-PKG_RELEASE:=1
-PKG_HASH:=458ec092e60ad700ddcf079cb63d435c15da4c7bb3d3f99b9a8e58a99e54075e
-PATCH_DIR:=./patches/v14.x
-else
-PKG_VERSION:=v12.22.12
-PKG_RELEASE:=2
-PKG_HASH:=bc42b7f8495b9bfc7f7850dd180bb02a5bdf139cc232b8c6f02a6967e20714f2
-PATCH_DIR:=./patches/v12.x
-endif
-endif
-endif
-
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://nodejs.org/dist/$(PKG_VERSION)
+PKG_HASH:=f01109d3102754ac360fcf25aa588f3bef5c090a8eed3fb1d0be194149c46cf2
 
-PKG_MAINTAINER:=Hirokazu MORIKAWA <morikw2@gmail.com>
+PKG_MAINTAINER:=Hirokazu MORIKAWA <morikw2@gmail.com>, Adrian Panella <ianchi74@outlook.com>
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
 PKG_CPE_ID:=cpe:/a:nodejs:node.js
@@ -46,7 +26,6 @@ HOST_BUILD_PARALLEL:=1
 PKG_BUILD_DEPENDS:=python3/host
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
-PKG_USE_MIPS16:=0
 PKG_ASLR_PIE:=0
 
 include $(INCLUDE_DIR)/host-build.mk
@@ -58,8 +37,8 @@ define Package/node
   SUBMENU:=Node.js
   TITLE:=Node.js is a platform built on Chrome's JavaScript runtime
   URL:=https://nodejs.org/
-  DEPENDS:=@(HAS_FPU||KERNEL_MIPS_FPU_EMULATOR||SOFT_FLOAT) @!arc @!armeb @!powerpc \
-	   +libstdcpp +NODEJS_18:libopenssl +zlib +libnghttp2 +libuv \
+  DEPENDS:=@HAS_FPU @(i386||x86_64||arm||aarch64) \
+	   +libstdcpp +libopenssl +zlib +libnghttp2 \
 	   +libcares +libatomic +NODEJS_ICU_SYSTEM:icu +NODEJS_ICU_SYSTEM:icu-full-data
 endef
 
@@ -69,7 +48,7 @@ define Package/node/description
    package ecosystem, npm, is the largest ecosystem of open source libraries in the world.
 
   *** The following preparations must be made on the host side. ***
-      1. gcc 8.3 or higher is required.
+      1. gcc 10.1 or higher is required.
       2. To build a 32-bit target, gcc-multilib, g++-multilib are required.
       3. Requires libatomic package. (If necessary, install the 32-bit library at the same time.)
      ex) sudo apt-get install gcc-multilib g++-multilib
@@ -89,60 +68,27 @@ define Package/node-npm/description
 endef
 
 define Package/node/config
-	menu "Configuration"
-
-	choice
-		prompt "Version Selection"
-		default NODEJS_12 if mips||mipsel||mips64||mips64el
-		default NODEJS_16
-		help
-		 Select node.js version.
-		 The host package version is also the same.
-
-		config NODEJS_12
-			bool "12.x Maintenance LTS"
-
-		config NODEJS_14
-			depends on !(mips||mipsel||mips64||mips64el)
-			bool "14.x Maintenance"
-
-		config NODEJS_16
-			depends on !(mips||mipsel||mips64||mips64el)
-			bool "16.x Maintenance"
-
-		config NODEJS_18
-			depends on !(mips||mipsel||mips64||mips64el)
-			bool "18.x Active LTS"
-	endchoice
-
 	if PACKAGE_node
-		choice
-			prompt "i18n features"
-			default NODEJS_ICU_SMALL
-			help
-			 Select i18n features
+	choice
+		prompt "i18n features"
+		default NODEJS_ICU_SMALL
+		help
+		 Select i18n features
 
-			config NODEJS_ICU_NONE
-				bool "Disable"
+		config NODEJS_ICU_NONE
+			bool "Disable"
 
-			config NODEJS_ICU_SMALL
-				depends on !BIG_ENDIAN
-				bool "small-icu"
+		config NODEJS_ICU_SMALL
+			bool "small-icu"
 
-			config NODEJS_ICU_SYSTEM
-				depends on ARCH_64BIT&&!BIG_ENDIAN
-				bool "system-icu"
-		endchoice
+		config NODEJS_ICU_SYSTEM
+			depends on ARCH_64BIT
+			bool "system-icu"
+	endchoice
 	endif
-
-	endmenu
 endef
 
-NODEJS_CPU:=$(subst powerpc,ppc,$(subst aarch64,arm64,$(subst x86_64,x64,$(subst i386,ia32,$(ARCH)))))
-
-ifeq ($(CONFIG_NODEJS_10),y)
-TARGET_LDFLAGS+=-latomic
-endif
+NODEJS_CPU:=$(subst aarch64,arm64,$(subst x86_64,x64,$(subst i386,ia32,$(ARCH))))
 
 ifneq ($(CONFIG_ARCH_64BIT),y)
 FORCE_32BIT:=-m32
@@ -167,19 +113,20 @@ CONFIGURE_ARGS:= \
 	--dest-os=linux \
 	--cross-compiling \
 	--shared-zlib \
-	$(if $(CONFIG_NODEJS_18),--shared-openssl) \
+	--shared-openssl \
 	--shared-nghttp2 \
 	--shared-cares \
 	--with-intl=$(if $(CONFIG_NODEJS_ICU_SMALL),small-icu,$(if $(CONFIG_NODEJS_ICU_SYSTEM),system-icu,none)) \
-	$(if $(findstring mips,$(NODEJS_CPU)), \
-		$(if $(CONFIG_SOFT_FLOAT),--with-mips-float-abi=soft)) \
-	$(if $(findstring +neon,$(CONFIG_CPU_TYPE)),--with-arm-fpu=neon) \
-	$(if $(findstring +vfp",$(CONFIG_CPU_TYPE)),--with-arm-fpu=vfp) \
-	$(if $(findstring +vfpv3",$(CONFIG_CPU_TYPE)),--with-arm-fpu=vfpv3-d16) \
+	$(if $(findstring +neon",$(CONFIG_CPU_TYPE)),--with-arm-fpu=neon) \
+	$(if $(findstring +neon-vfpv4",$(CONFIG_CPU_TYPE)),--with-arm-fpu=neon) \
 	$(if $(findstring +vfpv4",$(CONFIG_CPU_TYPE)),--with-arm-fpu=vfpv3) \
+	$(if $(findstring +vfp",$(CONFIG_CPU_TYPE)),--with-arm-fpu=vfp) \
+	$(if $(findstring +vfpv3",$(CONFIG_CPU_TYPE)),--with-arm-fpu=vfpv3) \
+	$(if $(findstring +vfpv3-d16",$(CONFIG_CPU_TYPE)),--with-arm-fpu=vfpv3-d16) \
 	--prefix=/usr
 
 HOST_CONFIGURE_VARS:=
+
 HOST_CONFIGURE_ARGS:= \
 	--dest-os=$(if $(findstring Darwin,$(HOST_OS)),mac,linux) \
 	--with-intl=small-icu \
@@ -209,13 +156,12 @@ define Package/node-npm/install
 endef
 
 define Host/Install
-	$(RM) -rf $(1)/lib/node_modules/npm
+	rm -f $(1)/bin/npm
+	rm -f $(1)/bin/npx
+	rm -rf $(1)/lib/node_modules/npm
+	rm -f $(1)/bin/corepack
+	rm -rf $(1)/lib/node_modules/corepack
 	$(call Host/Install/Default)
-endef
-
-define Package/node-npm/postrm
-#!/bin/sh
-rm -rf /usr/lib/node_modules/npm || true
 endef
 
 $(eval $(call HostBuild))

@@ -18,7 +18,7 @@ PKG_LICENSE_FILES:=LICENSE
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
 
 GO_PKG:=github.com/mzz2017/gg
 GO_PKG_LDFLAGS_X:=$(GO_PKG)/cmd.Version=$(PKG_VERSION)
@@ -44,7 +44,9 @@ define Package/gg/description
 endef
 
 define Package/gg/conffiles
+/root/.config/gg/config.toml
 /root/.ggconfig.toml
+/etc/ggconfig.toml
 endef
 
 $(eval $(call GoBinPackage,gg))

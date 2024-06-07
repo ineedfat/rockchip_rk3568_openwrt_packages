@@ -8,18 +8,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gst1-plugins-bad
-PKG_VERSION:=1.20.5
+PKG_VERSION:=1.24.4
 PKG_RELEASE:=1
 
 PKG_SOURCE:=gst-plugins-bad-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://gstreamer.freedesktop.org/src/gst-plugins-bad/
-PKG_HASH:=f431214b0754d7037adcde93c3195106196588973e5b32dcb24938805f866363
+PKG_HASH:=260bd0a463b4faff9a42f41e5e028f787f10a92b779af8959aec64586f546bd3
 PKG_BUILD_DIR:=$(BUILD_DIR)/gst-plugins-bad-$(PKG_VERSION)
 
 PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org> \
 		Ted Hess <thess@kitschensync.net>
 PKG_LICENSE:=LGPL-2.1-or-later GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING.LIB COPYING
+PKG_CPE_ID:=cpe:/a:freedesktop:gst-plugins-bad
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
@@ -196,7 +197,6 @@ MESON_ARGS += \
 	-Dgsm=disabled \
 	-Dipcpipeline=disabled \
 	-Diqa=disabled \
-	-Dkate=disabled \
 	-Dkms=disabled \
 	-Dladspa=disabled \
 	-Dlibde265=disabled \
@@ -374,7 +374,7 @@ $(eval $(call GstBuildPlugin,interlace,interlace support,,,))
 $(eval $(call GstBuildPlugin,ivfparse,ivfparse support,,,))
 $(eval $(call GstBuildPlugin,ivtc,ivtc support,,,))
 $(eval $(call GstBuildPlugin,jp2kdecimator,jp2kdecimator support,,,))
-$(eval $(call GstBuildPlugin,jpegformat,jpegformat support,tag,,))
+$(eval $(call GstBuildPlugin,jpegformat,jpegformat support,tag codecparsers,,))
 $(eval $(call GstBuildPlugin,legacyrawparse,rawparse support,audio video,,))
 $(eval $(call GstBuildPlugin,midi,midi support,audio,,))
 $(eval $(call GstBuildPlugin,mpegpsdemux,mpegpsdemux support,pbutils,,))

@@ -5,9 +5,9 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/jow-/nlbwmon.git
-PKG_SOURCE_DATE:=2021-09-01
-PKG_SOURCE_VERSION:=d82c910cc3d6021567c925e767ed1fd8c3934f4b
-PKG_MIRROR_HASH:=0ec86d002c514691d7ac94fcc5055f346fe5d255cc39598c36f5ef41fab86f0a
+PKG_SOURCE_DATE:=2024-02-21
+PKG_SOURCE_VERSION:=c7616bcfaaef440848152f4dc738c990b2d0b90b
+PKG_MIRROR_HASH:=98758dbd14d230f21887b4da5f4f26ea5cb6ecff38ee70322b8fa28630c4d6bb
 
 CMAKE_INSTALL:=1
 
@@ -40,8 +40,6 @@ define Package/nlbwmon/install
 	$(INSTALL_CONF) ./files/nlbwmon.config $(1)/etc/config/nlbwmon
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface
 	$(INSTALL_BIN) ./files/nlbwmon.hotplug $(1)/etc/hotplug.d/iface/30-nlbwmon
-	$(INSTALL_DIR) $(1)/etc/sysctl.d
-	$(INSTALL_CONF) ./files/sysctl-net-core-mem.conf $(1)/etc/sysctl.d/sysctl-net-core-mem.conf
 endef
 
 define Package/nlbwmon/conffiles
